@@ -1,9 +1,10 @@
-import React from 'react';
+import React, {ChangeEvent, useEffect, useState} from 'react';
 import logo from './logo.svg';
 import './App.css';
-import {RickAndMortyCharacter} from "./RickAndMortyCharacter";
-import CharacterGallery from "./CharacterGallery";
-import CharacterCard from "./CharacterCard";
+import {RickAndMortyCharacter} from "./model/RickAndMortyCharacter";
+import CharacterGallery from "./components/CharacterGallery";
+import ActionBar from "./components/ActionBar";
+import axios from "axios";
 
 function App() {
     const allTheCharacters: RickAndMortyCharacter[] = [
@@ -1133,11 +1134,43 @@ function App() {
         }
     ]
 
+    const [characters, setCharacters] = useState<RickAndMortyCharacter[]>([])
+
+
+    const [inputText, setInputText] = useState("")
+
+    useEffect(()=> {
+        loadAllCharacters();
+
+    }, [])
+
+
+    const filteredCharacters = allTheCharacters.filter((character)=>
+        character.name.toLowerCase().includes(inputText.toLowerCase()))
+
+function onChange(value: string){
+    setInputText(value)
+}
+function loadAllCharacters (){
+        axios.get("https://rickandmortyapi.com/api/character").then((response)=>
+        {
+            setCharacters(response.data.results)
+
+        })
+            .catch((reason) =>{
+
+            })
+}
+
     return (
     <div className="App">
-
-        <CharacterGallery characters={allTheCharacters}/>
-
+        <ActionBar searchText={inputText} onTextChange={onChange}/>
+       {/* {filteredCharacters.length > 0 && <CharacterGallery characters={filteredCharacters} />}
+        {filteredCharacters.length === 0 && <p>No Character found!!</p>}*/}
+        {filteredCharacters.length > 0
+            ? <CharacterGallery characters={filteredCharacters}/>
+            : <p>No Character found!!</p>}
+        <ActionBar searchText={inputText} onTextChange={onChange}/>
     </div>
   );
 }
